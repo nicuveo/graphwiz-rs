@@ -1,10 +1,12 @@
 mod builder;
 mod entity;
 mod graph;
+mod render;
 
 pub use builder::*;
 pub use entity::*;
 pub use graph::*;
+pub use render::*;
 
 #[cfg(test)]
 mod tests {
@@ -27,6 +29,7 @@ mod tests {
 
         root_builder.new_edge(left, right);
         let graph = root_builder.build();
-        println!("{:?}", graph);
+
+        println!("{}", render_digraph(&graph));
     }
 }

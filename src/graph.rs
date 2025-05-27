@@ -3,7 +3,10 @@ use std::collections::HashMap;
 use crate::builder::RootBuilder;
 use crate::entity::*;
 
-/// Resulting graph
+/// Resulting graph.
+///
+/// Created by a call to RootBuilder::build, can be transformed into a String
+/// with the render functions.
 #[derive(Debug)]
 pub struct Graph {
     pub(crate) attributes: HashMap<Entity, Attributes>,
@@ -13,6 +16,7 @@ pub struct Graph {
 }
 
 impl Graph {
+    /// Creates a new Builder, which in turn will create the Graph.
     pub fn new() -> RootBuilder {
         RootBuilder {
             graph: Graph {
@@ -37,7 +41,7 @@ impl Graph {
         entity
     }
 
-    pub(crate) fn locate(&self, entity: &Entity) -> Option<Entity> {
+    fn locate(&self, entity: &Entity) -> Option<Entity> {
         let info = self.subgraphs.get(entity)?;
         info.nodes
             .get(0)
@@ -45,7 +49,7 @@ impl Graph {
             .or_else(|| info.subgraphs.iter().find_map(|e| self.locate(e)))
     }
 
-    pub(crate) fn resolve<F>(&mut self, entity: Entity, func: F) -> (Entity, Option<Entity>)
+    fn resolve<F>(&mut self, entity: Entity, func: F) -> (Entity, Option<Entity>)
     where
         F: FnOnce(&EdgeInfo) -> (Entity, Option<Entity>),
     {
@@ -57,8 +61,7 @@ impl Graph {
                     .get_mut(&ROOT)
                     .unwrap()
                     .insert("compound", "true".to_string());
-                let mut inside = self.locate(&entity);
-                (inside.unwrap_or(entity), inside.replace(entity))
+                (self.locate(&entity).unwrap_or(entity), Some(entity))
             }
         }
     }
@@ -103,6 +106,7 @@ pub(crate) struct EdgeInfo {
 #[derive(Debug)]
 pub(crate) struct SubgraphInfo {
     pub(crate) nodes: Vec<Entity>,
+    pub(crate) edges: Vec<Entity>,
     pub(crate) subgraphs: Vec<Entity>,
 }
 
@@ -110,6 +114,7 @@ impl SubgraphInfo {
     pub(crate) fn new() -> Self {
         SubgraphInfo {
             nodes: Vec::new(),
+            edges: Vec::new(),
             subgraphs: Vec::new(),
         }
     }
