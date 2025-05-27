@@ -1,0 +1,116 @@
+use std::collections::HashMap;
+
+use crate::builder::RootBuilder;
+use crate::entity::*;
+
+/// Resulting graph
+#[derive(Debug)]
+pub struct Graph {
+    pub(crate) attributes: HashMap<Entity, Attributes>,
+    pub(crate) subgraphs: HashMap<Entity, SubgraphInfo>,
+    pub(crate) edges: HashMap<Entity, EdgeInfo>,
+    pub(crate) latest: Id,
+}
+
+impl Graph {
+    pub fn new() -> RootBuilder {
+        RootBuilder {
+            graph: Graph {
+                attributes: HashMap::from([(ROOT, HashMap::new())]),
+                subgraphs: HashMap::new(),
+                edges: HashMap::new(),
+                latest: 0,
+            },
+            current: SubgraphInfo::new(),
+            defaults: HashMap::new(),
+        }
+    }
+
+    pub(crate) fn register(&mut self, kind: Kind, defaults: &HashMap<Kind, Attributes>) -> Entity {
+        self.latest += 1;
+        let entity = Entity {
+            kind: kind,
+            id: self.latest,
+        };
+        self.attributes
+            .insert(entity, defaults.get(&kind).cloned().unwrap_or_default());
+        entity
+    }
+
+    pub(crate) fn locate(&self, entity: &Entity) -> Option<Entity> {
+        let info = self.subgraphs.get(entity)?;
+        info.nodes
+            .get(0)
+            .cloned()
+            .or_else(|| info.subgraphs.iter().find_map(|e| self.locate(e)))
+    }
+
+    pub(crate) fn resolve<F>(&mut self, entity: Entity, func: F) -> (Entity, Option<Entity>)
+    where
+        F: FnOnce(&EdgeInfo) -> (Entity, Option<Entity>),
+    {
+        match entity.kind {
+            Kind::Node => (entity, None),
+            Kind::Edge => func(&self.edges[&entity]),
+            Kind::Cluster | Kind::Subgraph => {
+                self.attributes
+                    .get_mut(&ROOT)
+                    .unwrap()
+                    .insert("compound", "true".to_string());
+                let mut inside = self.locate(&entity);
+                (inside.unwrap_or(entity), inside.replace(entity))
+            }
+        }
+    }
+
+    pub(crate) fn new_node<S: Into<String>>(&mut self, label: S, defaults: &Defaults) -> Entity {
+        let entity = self.register(Kind::Node, defaults);
+        self.attributes_mut(entity).insert("label", label.into());
+        entity
+    }
+
+    pub(crate) fn new_edge(&mut self, head: Entity, tail: Entity, defaults: &Defaults) -> Entity {
+        let (head_node, head_subgraph) = self.resolve(head, |i| (i.tail_node, i.tail_subgraph));
+        let (tail_node, tail_subgraph) = self.resolve(tail, |i| (i.head_node, i.head_subgraph));
+        let info = EdgeInfo {
+            head_node: head_node,
+            tail_node: tail_node,
+            head_subgraph: head_subgraph,
+            tail_subgraph: tail_subgraph,
+        };
+        let entity = self.register(Kind::Edge, defaults);
+        self.edges.insert(entity, info);
+        entity
+    }
+
+    pub(crate) fn attributes(&self, entity: Entity) -> &Attributes {
+        self.attributes.get(&entity).unwrap()
+    }
+
+    pub(crate) fn attributes_mut(&mut self, entity: Entity) -> &mut Attributes {
+        self.attributes.get_mut(&entity).unwrap()
+    }
+}
+
+#[derive(Debug)]
+pub(crate) struct EdgeInfo {
+    pub(crate) head_node: Entity,
+    pub(crate) tail_node: Entity,
+    pub(crate) head_subgraph: Option<Entity>,
+    pub(crate) tail_subgraph: Option<Entity>,
+}
+
+#[derive(Debug)]
+pub(crate) struct SubgraphInfo {
+    pub(crate) nodes: Vec<Entity>,
+    pub(crate) subgraphs: Vec<Entity>,
+}
+
+impl SubgraphInfo {
+    pub(crate) fn new() -> Self {
+        SubgraphInfo {
+            nodes: Vec::new(),
+            subgraphs: Vec::new(),
+        }
+    }
+}
