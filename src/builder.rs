@@ -12,7 +12,7 @@ use crate::graph::*;
 pub struct RootBuilder {
     graph: Graph,
     current: SubgraphInfo,
-    defaults: HashMap<Kind, Attributes>,
+    defaults: Defaults,
 }
 
 impl RootBuilder {
@@ -29,7 +29,7 @@ pub struct SubgraphBuilder<'a> {
     graph: &'a mut Graph,
     entity: Entity,
     current: SubgraphInfo,
-    defaults: HashMap<Kind, Attributes>,
+    defaults: Defaults,
 }
 
 impl SubgraphBuilder<'_> {

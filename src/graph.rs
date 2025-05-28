@@ -29,7 +29,7 @@ impl Graph {
 // Internal
 
 impl Graph {
-    pub(crate) fn register(&mut self, kind: Kind, defaults: &HashMap<Kind, Attributes>) -> Entity {
+    pub(crate) fn register(&mut self, kind: Kind, defaults: &Defaults) -> Entity {
         self.latest += 1;
         let entity = Entity {
             kind,
