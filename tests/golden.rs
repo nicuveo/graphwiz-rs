@@ -15,7 +15,7 @@ fn forest_simple() {
     for node in forest.iter() {
         visit_node(&mut builder.new_subgraph(), node);
     }
-    let text = render_digraph(&builder.build());
+    let text = render_strict_graph(&builder.build());
     goldie::assert!(text)
 }
 

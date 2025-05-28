@@ -1,4 +1,4 @@
-graph {
+digraph {
     subgraph cluster_1 {
         label="front end"
         node_2 [fillcolor="#c3ffd8", label="source code", style="filled"]

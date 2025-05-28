@@ -1,23 +1,26 @@
-use crate::entity::*;
 use crate::graph::*;
 
 ////////////////////////////////////////////////////////////////////////////////
 // Public API
 
+/// Renders the given graph as an undirected DOT graph.
 pub fn render_graph(graph: &Graph) -> String {
     render_root(graph, "graph", "--")
 }
 
+/// Renders the given graph as a directed DOT graph.
 pub fn render_digraph(graph: &Graph) -> String {
-    render_root(graph, "graph", "->")
+    render_root(graph, "digraph", "->")
 }
 
+/// Renders the given graph as a strict undirected DOT graph.
 pub fn render_strict_graph(graph: &Graph) -> String {
-    render_root(graph, "graph", "--")
+    render_root(graph, "strict graph", "--")
 }
 
+/// Renders the given graph as a strict directed DOT graph.
 pub fn render_strict_digraph(graph: &Graph) -> String {
-    render_root(graph, "graph", "->")
+    render_root(graph, "strict digraph", "->")
 }
 
 ////////////////////////////////////////////////////////////////////////////////

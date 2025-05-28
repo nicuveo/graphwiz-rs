@@ -1,10 +1,29 @@
 use std::collections::HashMap;
 
 use crate::builder::RootBuilder;
-use crate::entity::*;
 
 ////////////////////////////////////////////////////////////////////////////////
 // Public API
+
+/// Simple Enum representing the four kinds of entities
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum Kind {
+    Node,
+    Edge,
+    Cluster,
+    Subgraph,
+}
+
+/// Unique identifier for a graph entity
+#[derive(Debug, Clone, Copy, Hash, Eq, PartialEq)]
+pub struct Entity {
+    pub(crate) kind: Kind,
+    pub(crate) id: Id,
+}
+
+/// Attributes of an entity
+pub type Attributes = HashMap<&'static str, String>;
+pub type Defaults = HashMap<Kind, Attributes>;
 
 /// Resulting graph.
 ///
@@ -27,6 +46,13 @@ impl Graph {
 
 ////////////////////////////////////////////////////////////////////////////////
 // Internal
+
+type Id = u32;
+
+pub(crate) const ROOT: Entity = Entity {
+    kind: Kind::Subgraph,
+    id: 0,
+};
 
 impl Graph {
     pub(crate) fn register(&mut self, kind: Kind, defaults: &Defaults) -> Entity {
