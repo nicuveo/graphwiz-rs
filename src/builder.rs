@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::mem;
 
 use crate::entity::*;
 use crate::graph::*;
@@ -34,8 +35,17 @@ pub struct SubgraphBuilder<'a> {
 impl SubgraphBuilder<'_> {
     /// Finalizes the builder and returns the corresponding entity.
     pub fn build(self) -> Entity {
-        self.graph.subgraphs.insert(self.entity, self.current);
         self.entity
+    }
+}
+
+impl Drop for SubgraphBuilder<'_> {
+    /// When a non-root builder is dropped, it does finalize properly.
+    fn drop(&mut self) {
+        self.graph.subgraphs.insert(
+            self.entity,
+            mem::replace(&mut self.current, SubgraphInfo::new()),
+        );
     }
 }
 
@@ -71,14 +81,14 @@ pub trait Builder {
     ///
     /// This function borrows the underlying shared state, meaning that this
     /// builder can no longer be used until the new subgraph builder has been
-    /// comsumed with 'build'.
+    /// comsumed with 'build' or has been dropped.
     fn new_subgraph(&mut self) -> SubgraphBuilder;
 
     /// Creates a new cluster within the current scope with the given label.
     ///
     /// This function borrows the underlying shared state, meaning that this
     /// builder can no longer be used until the new subgraph builder has been
-    /// comsumed with 'build'.
+    /// comsumed with 'build' or has been dropped.
     fn new_cluster<S: Into<String>>(&mut self, label: S) -> SubgraphBuilder;
 
     /// Like 'new_node' but takes attributes to add to the default as an argument.
@@ -114,7 +124,7 @@ pub trait Builder {
     }
 
     /// Retrieve the defaults for the given kind of nodes.
-    fn defaults(&self, kind: Kind) -> &Attributes;
+    fn defaults(&self, kind: Kind) -> Option<&Attributes>;
 
     /// Retrieve mutable defaults for the given kind of nodes.
     fn defaults_mut(&mut self, kind: Kind) -> &mut Attributes;
@@ -190,12 +200,12 @@ impl Builder for RootBuilder {
         self.new_builder(entity)
     }
 
-    fn defaults(&self, kind: Kind) -> &Attributes {
-        self.defaults.get(&kind).unwrap()
+    fn defaults(&self, kind: Kind) -> Option<&Attributes> {
+        self.defaults.get(&kind)
     }
 
     fn defaults_mut(&mut self, kind: Kind) -> &mut Attributes {
-        self.defaults.get_mut(&kind).unwrap()
+        self.defaults.entry(kind).or_default()
     }
 
     fn attributes(&self, entity: Entity) -> &Attributes {
@@ -233,12 +243,12 @@ impl Builder for SubgraphBuilder<'_> {
         self.new_builder(entity)
     }
 
-    fn defaults(&self, kind: Kind) -> &Attributes {
-        self.defaults.get(&kind).unwrap()
+    fn defaults(&self, kind: Kind) -> Option<&Attributes> {
+        self.defaults.get(&kind)
     }
 
     fn defaults_mut(&mut self, kind: Kind) -> &mut Attributes {
-        self.defaults.get_mut(&kind).unwrap()
+        self.defaults.entry(kind).or_default()
     }
 
     fn attributes(&self, entity: Entity) -> &Attributes {
