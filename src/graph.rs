@@ -5,7 +5,10 @@ use crate::builder::RootBuilder;
 ////////////////////////////////////////////////////////////////////////////////
 // Public API
 
-/// Simple Enum representing the four kinds of entities
+/// Simple enum representing the four kinds of entities.
+///
+/// Clusters and subgraphs are considered different, allowing the user to
+/// specify different default attributes for each (see `Builder::defaults`).
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum Kind {
     Node,
@@ -14,21 +17,30 @@ pub enum Kind {
     Subgraph,
 }
 
-/// Unique identifier for a graph entity
+/// Unique identifier for a graph entity.
+///
+/// This opaque and lightweight identifier can be copied freely and doesn't hold
+/// a reference to the graph.
 #[derive(Debug, Clone, Copy, Hash, Eq, PartialEq)]
 pub struct Entity {
     pub(crate) kind: Kind,
     pub(crate) id: Id,
 }
 
-/// Attributes of an entity
+/// Attributes of an entity.
 pub type Attributes = HashMap<&'static str, String>;
+
+/// Default attributes for a given [Kind].
 pub type Defaults = HashMap<Kind, Attributes>;
 
 /// Resulting graph.
 ///
-/// Created by a call to RootBuilder::build, can be transformed into a String
-/// with the render functions.
+/// A graph is not created directly: [Graph::new_builder] creates a
+/// [RootBuilder], and [RootBuilder::build] consumes the builder and returns the
+/// graph.
+///
+/// The graph can be transformed into a DOT representation using any of the
+/// rendering functions.
 #[derive(Debug)]
 pub struct Graph {
     pub(crate) attributes: HashMap<Entity, Attributes>,
@@ -38,7 +50,7 @@ pub struct Graph {
 }
 
 impl Graph {
-    /// Creates a new Builder, which in turn will create the Graph.
+    /// Creates a new [RootBuilder].
     pub fn new_builder() -> RootBuilder {
         RootBuilder::new()
     }
@@ -128,19 +140,9 @@ pub(crate) struct EdgeInfo {
     pub(crate) tail_subgraph: Option<Entity>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub(crate) struct SubgraphInfo {
     pub(crate) nodes: Vec<Entity>,
     pub(crate) edges: Vec<Entity>,
     pub(crate) subgraphs: Vec<Entity>,
-}
-
-impl SubgraphInfo {
-    pub(crate) fn new() -> Self {
-        SubgraphInfo {
-            nodes: Vec::new(),
-            edges: Vec::new(),
-            subgraphs: Vec::new(),
-        }
-    }
 }

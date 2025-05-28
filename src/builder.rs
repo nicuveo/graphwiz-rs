@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::default::Default;
 use std::mem;
 
 use crate::graph::*;
@@ -8,8 +9,8 @@ use crate::graph::*;
 
 /// Builder for the root graph.
 ///
-/// This can only be constructed by `Graph::new_builder`, and implements the
-/// `Builder` trait.
+/// This can only be constructed by [Graph::new_builder], and implements the
+/// [Builder] trait.
 #[derive(Debug)]
 pub struct RootBuilder {
     graph: Graph,
@@ -27,11 +28,11 @@ impl RootBuilder {
 
 /// Builder for all subgraphs.
 ///
-/// This can be constructed by calling the `new_subgraph` or `new_cluster`
-/// functions on a `Builder`. The newly created builder becomes the "active"
-/// one, as it will hold the reference to the whole graph; the previous builder
-/// becomes active again when its child builder has been dropped and the mutable
-/// reference is gone.
+/// This can be constructed by calling [Builder] functions such as
+/// [Builder::new_subgraph] or [Builder::new_cluster]. The newly created builder
+/// becomes the "active" one, as it will hold the reference to the whole graph;
+/// the previous builder becomes active again when its child builder has been
+/// dropped and the mutable reference is gone.
 #[derive(Debug)]
 pub struct SubgraphBuilder<'a> {
     graph: &'a mut Graph,
@@ -44,9 +45,9 @@ impl SubgraphBuilder<'_> {
     /// Finalizes the builder and returns the corresponding entity.
     ///
     /// This releases the hold that the builder has on the reference to the
-    /// graph, allowing its parent to be used again. This relies on the `Drop`
-    /// trait.
+    /// graph, allowing its parent to be used again.
     pub fn build(self) -> Entity {
+        // This relies on the [Drop] trait.
         self.entity
     }
 }
@@ -55,17 +56,16 @@ impl Drop for SubgraphBuilder<'_> {
     /// If a subgraph builder gets dropped without being explicitly finalized
     /// with `build`, we want to ensure that it is properly finalized.
     fn drop(&mut self) {
-        self.graph.subgraphs.insert(
-            self.entity,
-            mem::replace(&mut self.current, SubgraphInfo::new()),
-        );
+        self.graph
+            .subgraphs
+            .insert(self.entity, mem::take(&mut self.current));
     }
 }
 
 /// All required functions to build new graph elements.
 pub trait Builder {
     /// Creates a new node within the current scope, with the given label.
-    /// Returns the new node's entity, which can be used to alter this node's
+    /// Returns the new node's [Entity], which can be used to alter this node's
     /// attributes.
     fn new_node(&mut self, label: impl Into<String>) -> Entity;
 
@@ -87,45 +87,45 @@ pub trait Builder {
     ///     let cd = builder.new_edge(c, d);   // creates c --> d
     ///     let bc = builder.new_edge(ab, cd); // creates b --> c
     ///
-    /// Returns the entity of the newly created edge.
+    /// Returns the [Entity] of the newly created edge.
     fn new_edge(&mut self, head: Entity, tail: Entity) -> Entity;
 
     /// Creates a new subgraph within the current scope.
     ///
     /// This function borrows the underlying shared state, meaning that this
     /// builder can no longer be used until the new subgraph builder has been
-    /// comsumed with 'build' or has been dropped.
+    /// comsumed with [SubgraphBuilder::build] or has been dropped.
     fn new_subgraph(&mut self) -> SubgraphBuilder;
 
     /// Creates a new cluster within the current scope with the given label.
     ///
     /// This function borrows the underlying shared state, meaning that this
     /// builder can no longer be used until the new subgraph builder has been
-    /// comsumed with 'build' or has been dropped.
+    /// comsumed with [SubgraphBuilder::build] or has been dropped.
     fn new_cluster(&mut self, label: impl Into<String>) -> SubgraphBuilder;
 
-    /// Like 'new_node' but takes attributes to add to the default as an argument.
+    /// Like [Builder::new_node] but takes attributes to add to the default as an argument.
     fn new_node_with(&mut self, label: impl Into<String>, attribs: Attributes) -> Entity {
         let entity = self.new_node(label);
         self.attributes_mut(entity).extend(attribs);
         entity
     }
 
-    /// Like 'new_edge' but takes attributes to add to the default as an argument.
+    /// Like [Builder::new_edge] but takes attributes to add to the default as an argument.
     fn new_edge_with(&mut self, head: Entity, tail: Entity, attribs: Attributes) -> Entity {
         let entity = self.new_edge(head, tail);
         self.attributes_mut(entity).extend(attribs);
         entity
     }
 
-    /// Like 'new_subgraph' but takes attributes to add to the default as an argument.
+    /// Like [Builder::new_subgraph] but takes attributes to add to the default as an argument.
     fn new_subgraph_with(&mut self, attribs: Attributes) -> SubgraphBuilder {
         let mut result = self.new_subgraph();
         result.attributes_mut(result.entity).extend(attribs);
         result
     }
 
-    /// Like 'new_cluster' but takes attributes to add to the default as an argument.
+    /// Like [Builder::new_cluster] but takes attributes to add to the default as an argument.
     fn new_cluster_with(
         &mut self,
         label: impl Into<String>,
@@ -206,7 +206,7 @@ impl RootBuilder {
                 edges: HashMap::new(),
                 latest: 0,
             },
-            current: SubgraphInfo::new(),
+            current: Default::default(),
             defaults: HashMap::new(),
         }
     }
@@ -215,7 +215,7 @@ impl RootBuilder {
         SubgraphBuilder {
             graph: &mut self.graph,
             entity,
-            current: SubgraphInfo::new(),
+            current: Default::default(),
             defaults: self.defaults.clone(),
         }
     }
@@ -226,7 +226,7 @@ impl SubgraphBuilder<'_> {
         SubgraphBuilder {
             graph: self.graph,
             entity,
-            current: SubgraphInfo::new(),
+            current: Default::default(),
             defaults: self.defaults.clone(),
         }
     }
