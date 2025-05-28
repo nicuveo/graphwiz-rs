@@ -46,20 +46,23 @@ let mut builder = Graph::new_builder();
 builder
     .defaults_mut(Kind::Edge)
     .extend(HashMap::from([
-        ("style", "dotted".to_string()),
         ("color", "blue".to_string()),
     ]));
 builder
     .defaults_mut(Kind::Node)
     .extend(HashMap::from([
-        ("shape", "hexagon".to_string())
+        ("style", "dotted".to_string()),
+        ("shape", "square".to_string())
     ]));
+
 let x = builder.
     new_node_with("x", HashMap::from([
         ("shape", "hexagon".to_string()),
-        ("fontcolor", "red".to_string()),
     ]));
-println!("{:?}", builder.attributes(x));
+
+assert_eq!(builder.attributes(x)["shape"], "hexagon".to_string());
+assert_eq!(builder.attributes(x)["style"], "dotted".to_string());
+assert_eq!(builder.attributes(x),get("color"), None);
 ```
 
 ### Auto compound
@@ -75,7 +78,7 @@ graph foo {
 }
 ```
 
-GraphWiz automates the task: if one end of an edge is a cluster, the `compound` attribute is added to the graph, and the correct attributes are set at rendering time. To be as unobtrusive as possible, the values of `ltail` and `lhead` will not be updated if already present, trusting the user to know best.
+GraphWiz automates the task: if one end of an edge is a cluster, the `compound` attribute is added to the graph, and the correct attributes are set at rendering time.
 
 ## Full example
 
