@@ -1,0 +1,13 @@
+graph {
+    subgraph cluster_1 {
+        label="front end"
+        node_2 [fillcolor="#c3ffd8", label="source code", style="filled"]
+        node_3 [fillcolor="yellow", label="AST", style="filled"]
+        node_2 -> node_3 [label="parsing"]
+    }
+    subgraph cluster_5 {
+        label="middle end"
+        node_6 [fillcolor="salmon", label="IR", shape="diamond", style="filled"]
+        node_3 -> node_6 [label="lowering", style="dotted"]
+    }
+}
