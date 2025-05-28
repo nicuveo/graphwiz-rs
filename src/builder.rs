@@ -3,32 +3,26 @@ use std::collections::HashMap;
 use crate::entity::*;
 use crate::graph::*;
 
-/// Builder for the root graph
+////////////////////////////////////////////////////////////////////////////////
+// Public API
+
+/// Builder for the root graph.
 #[derive(Debug)]
 pub struct RootBuilder {
-    pub(crate) graph: Graph,
-    pub(crate) current: SubgraphInfo,
-    pub(crate) defaults: HashMap<Kind, Attributes>,
+    graph: Graph,
+    current: SubgraphInfo,
+    defaults: HashMap<Kind, Attributes>,
 }
 
 impl RootBuilder {
-    fn new_builder(&mut self, entity: Entity) -> SubgraphBuilder {
-        SubgraphBuilder {
-            graph: &mut self.graph,
-            entity: entity,
-            current: SubgraphInfo::new(),
-            defaults: self.defaults.clone(),
-        }
-    }
-
-    /// Finalizes the builder and returns the final graph
+    /// Finalizes the builder and returns the final graph.
     pub fn build(mut self) -> Graph {
         self.graph.subgraphs.insert(ROOT, self.current);
         self.graph
     }
 }
 
-/// Builer for all subgraphs
+/// Builder for all subgraphs.
 #[derive(Debug)]
 pub struct SubgraphBuilder<'a> {
     graph: &'a mut Graph,
@@ -38,23 +32,14 @@ pub struct SubgraphBuilder<'a> {
 }
 
 impl SubgraphBuilder<'_> {
-    fn new_builder(&mut self, entity: Entity) -> SubgraphBuilder {
-        SubgraphBuilder {
-            graph: self.graph,
-            entity: entity,
-            current: SubgraphInfo::new(),
-            defaults: self.defaults.clone(),
-        }
-    }
-
-    /// Finalizes the builder and returns the corresponding entity
+    /// Finalizes the builder and returns the corresponding entity.
     pub fn build(self) -> Entity {
         self.graph.subgraphs.insert(self.entity, self.current);
         self.entity
     }
 }
 
-/// All required functions to build new graph eleements
+/// All required functions to build new graph elements.
 pub trait Builder {
     /// Creates a new node within the current scope, with the given label.
     /// Returns the new node's entity, which can be used to alter this node's
@@ -70,7 +55,7 @@ pub trait Builder {
     /// If any of the entities is an edge, this function "chains" them:
     ///
     ///     use graphwiz::{Graph, Builder};
-    ///     let mut builder = Graph::new();
+    ///     let mut builder = Graph::new_builder();
     ///     let a  = builder.new_node("a");
     ///     let b  = builder.new_node("b");
     ///     let c  = builder.new_node("c");
@@ -99,23 +84,21 @@ pub trait Builder {
     /// Like 'new_node' but takes attributes to add to the default as an argument.
     fn new_node_with<S: Into<String>>(&mut self, label: S, attribs: Attributes) -> Entity {
         let entity = self.new_node(label);
-        self.attributes_mut(entity).extend(attribs.into_iter());
+        self.attributes_mut(entity).extend(attribs);
         entity
     }
 
     /// Like 'new_edge' but takes attributes to add to the default as an argument.
     fn new_edge_with(&mut self, head: Entity, tail: Entity, attribs: Attributes) -> Entity {
         let entity = self.new_edge(head, tail);
-        self.attributes_mut(entity).extend(attribs.into_iter());
+        self.attributes_mut(entity).extend(attribs);
         entity
     }
 
     /// Like 'new_subgraph' but takes attributes to add to the default as an argument.
     fn new_subgraph_with(&mut self, attribs: Attributes) -> SubgraphBuilder {
         let mut result = self.new_subgraph();
-        result
-            .attributes_mut(result.entity)
-            .extend(attribs.into_iter());
+        result.attributes_mut(result.entity).extend(attribs);
         result
     }
 
@@ -126,19 +109,59 @@ pub trait Builder {
         attribs: Attributes,
     ) -> SubgraphBuilder {
         let mut result = self.new_cluster(label);
-        result
-            .attributes_mut(result.entity)
-            .extend(attribs.into_iter());
+        result.attributes_mut(result.entity).extend(attribs);
         result
     }
 
+    /// Retrieve the defaults for the given kind of nodes.
     fn defaults(&self, kind: Kind) -> &Attributes;
 
+    /// Retrieve mutable defaults for the given kind of nodes.
     fn defaults_mut(&mut self, kind: Kind) -> &mut Attributes;
 
+    /// Retrieve the attributes for the given entity.
     fn attributes(&self, entity: Entity) -> &Attributes;
 
+    /// Retrieve mutable attributes for the given kind of nodes.
     fn attributes_mut(&mut self, entity: Entity) -> &mut Attributes;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Internal
+
+impl RootBuilder {
+    pub(crate) fn new() -> RootBuilder {
+        RootBuilder {
+            graph: Graph {
+                attributes: HashMap::from([(ROOT, HashMap::new())]),
+                subgraphs: HashMap::new(),
+                edges: HashMap::new(),
+                latest: 0,
+            },
+            current: SubgraphInfo::new(),
+            defaults: HashMap::new(),
+        }
+    }
+
+    fn new_builder(&mut self, entity: Entity) -> SubgraphBuilder {
+        SubgraphBuilder {
+            graph: &mut self.graph,
+            entity,
+            current: SubgraphInfo::new(),
+            defaults: self.defaults.clone(),
+        }
+    }
+}
+
+impl SubgraphBuilder<'_> {
+    fn new_builder(&mut self, entity: Entity) -> SubgraphBuilder {
+        SubgraphBuilder {
+            graph: self.graph,
+            entity,
+            current: SubgraphInfo::new(),
+            defaults: self.defaults.clone(),
+        }
+    }
 }
 
 impl Builder for RootBuilder {

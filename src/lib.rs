@@ -14,7 +14,7 @@ mod tests {
 
     #[test]
     fn build_a_graph() {
-        let mut root_builder = Graph::new();
+        let mut root_builder = Graph::new_builder();
         let a = root_builder.new_node("a");
 
         let mut left_builder = root_builder.new_cluster("left");

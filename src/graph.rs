@@ -3,6 +3,9 @@ use std::collections::HashMap;
 use crate::builder::RootBuilder;
 use crate::entity::*;
 
+////////////////////////////////////////////////////////////////////////////////
+// Public API
+
 /// Resulting graph.
 ///
 /// Created by a call to RootBuilder::build, can be transformed into a String
@@ -17,23 +20,19 @@ pub struct Graph {
 
 impl Graph {
     /// Creates a new Builder, which in turn will create the Graph.
-    pub fn new() -> RootBuilder {
-        RootBuilder {
-            graph: Graph {
-                attributes: HashMap::from([(ROOT, HashMap::new())]),
-                subgraphs: HashMap::new(),
-                edges: HashMap::new(),
-                latest: 0,
-            },
-            current: SubgraphInfo::new(),
-            defaults: HashMap::new(),
-        }
+    pub fn new_builder() -> RootBuilder {
+        RootBuilder::new()
     }
+}
 
+////////////////////////////////////////////////////////////////////////////////
+// Internal
+
+impl Graph {
     pub(crate) fn register(&mut self, kind: Kind, defaults: &HashMap<Kind, Attributes>) -> Entity {
         self.latest += 1;
         let entity = Entity {
-            kind: kind,
+            kind,
             id: self.latest,
         };
         self.attributes
@@ -44,7 +43,7 @@ impl Graph {
     fn locate(&self, entity: &Entity) -> Option<Entity> {
         let info = self.subgraphs.get(entity)?;
         info.nodes
-            .get(0)
+            .first()
             .cloned()
             .or_else(|| info.subgraphs.iter().find_map(|e| self.locate(e)))
     }
@@ -76,10 +75,10 @@ impl Graph {
         let (head_node, head_subgraph) = self.resolve(head, |i| (i.tail_node, i.tail_subgraph));
         let (tail_node, tail_subgraph) = self.resolve(tail, |i| (i.head_node, i.head_subgraph));
         let info = EdgeInfo {
-            head_node: head_node,
-            tail_node: tail_node,
-            head_subgraph: head_subgraph,
-            tail_subgraph: tail_subgraph,
+            head_node,
+            tail_node,
+            head_subgraph,
+            tail_subgraph,
         };
         let entity = self.register(Kind::Edge, defaults);
         self.edges.insert(entity, info);

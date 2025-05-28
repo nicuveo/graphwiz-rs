@@ -82,7 +82,7 @@ fn render_node(graph: &Graph, entity: Entity) -> String {
     format!(
         "{} [{}]",
         render_entity(graph, entity),
-        render_attributes(&graph.attributes.get(&entity).unwrap()).join(", ")
+        render_attributes(graph.attributes.get(&entity).unwrap()).join(", ")
     )
 }
 
