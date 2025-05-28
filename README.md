@@ -124,7 +124,7 @@ let text = render_digraph(&builder.build());
 #### Resulting DOT file
 
 ```DOT
-graph {
+digraph {
     subgraph cluster_1 {
         label="front end"
         node_2 [fillcolor="#c3ffd8", label="source code", style="filled"]
