@@ -34,7 +34,9 @@ fn render_root(graph: &Graph, kind: &str, arrow: &str) -> String {
     let header = format!("{} {{", kind);
     let subgraph = &graph.subgraphs[&ROOT];
     let attributes = &graph.attributes.get(&ROOT).unwrap();
-    render_group(graph, arrow, header, subgraph, attributes).join("\n")
+    let mut result = render_group(graph, arrow, header, subgraph, attributes).join("\n");
+    result.push('\n');
+    result
 }
 
 fn render_subgraph(graph: &Graph, arrow: &str, entity: Entity) -> Vec<String> {
@@ -119,10 +121,12 @@ fn render_entity(graph: &Graph, entity: Entity) -> String {
 }
 
 fn render_attributes(attributes: &Attributes) -> Vec<String> {
-    attributes
+    let mut result: Vec<String> = attributes
         .iter()
         .map(|(k, v)| render_attribute(k, v))
-        .collect()
+        .collect();
+    result.sort();
+    result
 }
 
 fn render_attribute(key: &str, value: &String) -> String {
