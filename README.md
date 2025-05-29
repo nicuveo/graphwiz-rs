@@ -4,7 +4,7 @@
 
 
 GraphWiz provides builders to generate and render graphs in the [GraphViz DOT
-//! format](https://graphviz.org/). It is adapted from [its Haskell
+format](https://graphviz.org/). It is adapted from [its Haskell
 equivalent](https://github.com/nicuveo/graphwiz).
 
 It's a "wizard" for Graphviz's DOT format, hence the name "GraphWiz".
