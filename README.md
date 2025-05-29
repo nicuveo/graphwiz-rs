@@ -1,6 +1,6 @@
 # :mage_woman: GraphWiz
 
-[![build status][BuildShield]][BuildLink]
+[![build status][BuildShield]][BuildLink] [![crates.io version][CratesShield]][CratesLink]
 
 
 GraphWiz provides builders to generate and render graphs in the [GraphViz DOT
@@ -11,6 +11,8 @@ It's a "wizard" for Graphviz's DOT format, hence the name "GraphWiz".
 
 [BuildLink]:   https://github.com/nicuveo/graphwiz-rs/actions/workflows/rust.yml?query=branch%3Amain
 [BuildShield]: https://img.shields.io/github/actions/workflow/status/nicuveo/graphwiz-rs/rust.yml?event=push&style=flat&branch=main&label=build
+[CratesLink]:   https://crates.io/crates/graphwiz
+[CratesShield]: https://img.shields.io/crates/v/graphwiz
 
 ### Overview
 
