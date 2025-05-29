@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 
+use crate::attributes::{COMPOUND, LABEL};
 use crate::builder::RootBuilder;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -97,7 +98,7 @@ impl Graph {
                 self.attributes
                     .get_mut(&ROOT)
                     .unwrap()
-                    .insert("compound", "true".to_string());
+                    .insert(COMPOUND, "true".to_string());
                 (self.locate(&entity).unwrap_or(entity), Some(entity))
             }
         }
@@ -105,7 +106,7 @@ impl Graph {
 
     pub(crate) fn new_node<S: Into<String>>(&mut self, label: S, defaults: &Defaults) -> Entity {
         let entity = self.register(Kind::Node, defaults);
-        self.attributes_mut(entity).insert("label", label.into());
+        self.attributes_mut(entity).insert(LABEL, label.into());
         entity
     }
 

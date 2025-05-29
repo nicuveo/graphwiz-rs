@@ -1,3 +1,4 @@
+use crate::attributes::{LHEAD, LTAIL};
 use crate::graph::*;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -99,14 +100,14 @@ fn render_edge(graph: &Graph, arrow: &str, entity: Entity) -> String {
     let mut attributes = match edge.head_subgraph {
         None => attributes,
         Some(entity) => {
-            attributes.push(render_attribute("lhead", &render_entity(graph, entity)));
+            attributes.push(render_attribute(LHEAD, &render_entity(graph, entity)));
             attributes
         }
     };
     let attributes = match edge.tail_subgraph {
         None => attributes,
         Some(entity) => {
-            attributes.push(render_attribute("ltail", &render_entity(graph, entity)));
+            attributes.push(render_attribute(LTAIL, &render_entity(graph, entity)));
             attributes
         }
     };

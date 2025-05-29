@@ -1,5 +1,6 @@
 //! Recursive builders for the DOT format.
 
+pub mod attributes;
 mod builder;
 mod graph;
 mod render;

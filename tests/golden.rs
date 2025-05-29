@@ -1,4 +1,5 @@
 use goldie;
+use graphwiz::attributes::*;
 use graphwiz::*;
 use std::collections::HashMap;
 use trees::{Node, tr};
@@ -33,31 +34,31 @@ fn original_hs() {
     let mut builder = Graph::new_builder();
     builder
         .defaults_mut(Kind::Node)
-        .insert("style", "filled".to_string());
+        .insert(STYLE, "filled".to_string());
 
     let mut front = builder.new_cluster("front end");
     let code = front.new_node_with(
         "source code",
-        HashMap::from([("fillcolor", "#c3ffd8".to_string())]),
+        HashMap::from([(FILLCOLOR, "#c3ffd8".to_string())]),
     );
-    let ast = front.new_node_with("AST", HashMap::from([("fillcolor", "yellow".to_string())]));
-    front.new_edge_with(code, ast, HashMap::from([("label", "parsing".to_string())]));
+    let ast = front.new_node_with("AST", HashMap::from([(FILLCOLOR, "yellow".to_string())]));
+    front.new_edge_with(code, ast, HashMap::from([(LABEL, "parsing".to_string())]));
     front.build();
 
     let mut middle = builder.new_cluster("middle end");
     let ir = middle.new_node_with(
         "IR",
         HashMap::from([
-            ("fillcolor", "salmon".to_string()),
-            ("shape", "diamond".to_string()),
+            (FILLCOLOR, "salmon".to_string()),
+            (SHAPE, "diamond".to_string()),
         ]),
     );
     middle.new_edge_with(
         ast,
         ir,
         HashMap::from([
-            ("label", "lowering".to_string()),
-            ("style", "dotted".to_string()),
+            (LABEL, "lowering".to_string()),
+            (STYLE, "dotted".to_string()),
         ]),
     );
     middle.build();
