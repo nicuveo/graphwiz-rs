@@ -1,9 +1,11 @@
 [package]
 name = "graphwiz"
-version = "0.1.0"
+version = "0.5.0"
 edition = "2024"
-
-[dependencies]
+license = "MIT OR Apache-2.0"
+description = "DOT graph builder library"
+repository = "https://github.com/nicuveo/graphwiz-rs"
+keywords = ["DOT", "graph"]
 
 [dev-dependencies]
 goldie = "0.5.0"
