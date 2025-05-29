@@ -1,0 +1,11 @@
+digraph {
+    node_1 [fillcolor="lavender", label="a", style="filled"]
+    node_2 [fillcolor="lavender", label="b", style="filled"]
+    node_1 -> node_2 [style="dotted"]
+    node_5 -> node_1
+    node_5 -> node_2
+    subgraph cluster_4 {
+        label="box"
+        node_5 [fillcolor="cornflowerblue", label="c", shape="circle", style="filled"]
+    }
+}

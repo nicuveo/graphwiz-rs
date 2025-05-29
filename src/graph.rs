@@ -31,13 +31,13 @@ pub struct Entity {
 /// Attributes of an entity.
 pub type Attributes = HashMap<&'static str, String>;
 
-/// Default attributes for a given [Kind].
+/// Default attributes for a given [`Kind`].
 pub type Defaults = HashMap<Kind, Attributes>;
 
 /// Resulting graph.
 ///
-/// A graph is not created directly: [Graph::new_builder] creates a
-/// [RootBuilder], and [RootBuilder::build] consumes the builder and returns the
+/// A graph is not created directly: [`Graph::new_builder`] creates a
+/// [`RootBuilder`], and [`RootBuilder::build`] consumes the builder and returns the
 /// graph.
 ///
 /// The graph can be transformed into a DOT representation using any of the
@@ -51,7 +51,8 @@ pub struct Graph {
 }
 
 impl Graph {
-    /// Creates a new [RootBuilder].
+    /// Creates a new [`RootBuilder`].
+    #[must_use]
     pub fn new_builder() -> RootBuilder {
         RootBuilder::new()
     }
@@ -79,12 +80,12 @@ impl Graph {
         entity
     }
 
-    fn locate(&self, entity: &Entity) -> Option<Entity> {
-        let info = self.subgraphs.get(entity)?;
+    fn locate(&self, entity: Entity) -> Option<Entity> {
+        let info = self.subgraphs.get(&entity)?;
         info.nodes
             .first()
-            .cloned()
-            .or_else(|| info.subgraphs.iter().find_map(|e| self.locate(e)))
+            .copied()
+            .or_else(|| info.subgraphs.iter().find_map(|&e| self.locate(e)))
     }
 
     fn resolve<F>(&mut self, entity: Entity, func: F) -> (Entity, Option<Entity>)
@@ -99,7 +100,7 @@ impl Graph {
                     .get_mut(&ROOT)
                     .unwrap()
                     .insert(COMPOUND, "true".to_string());
-                (self.locate(&entity).unwrap_or(entity), Some(entity))
+                (self.locate(entity).unwrap_or(entity), Some(entity))
             }
         }
     }

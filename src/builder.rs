@@ -10,8 +10,8 @@ use crate::graph::*;
 
 /// Builder for the root graph.
 ///
-/// This can only be constructed by [Graph::new_builder], and implements the
-/// [Builder] trait.
+/// This can only be constructed by [`Graph::new_builder`], and implements the
+/// [`Builder`] trait.
 #[derive(Debug)]
 pub struct RootBuilder {
     graph: Graph,
@@ -21,6 +21,7 @@ pub struct RootBuilder {
 
 impl RootBuilder {
     /// Finalizes the builder and returns the final graph.
+    #[must_use]
     pub fn build(mut self) -> Graph {
         self.graph.subgraphs.insert(ROOT, self.current);
         self.graph
@@ -29,11 +30,12 @@ impl RootBuilder {
 
 /// Builder for all subgraphs.
 ///
-/// This can be constructed by calling [Builder] functions such as
-/// [Builder::new_subgraph] or [Builder::new_cluster]. The newly created builder
-/// becomes the "active" one, as it will hold the reference to the whole graph;
-/// the previous builder becomes active again when its child builder has been
-/// dropped and the mutable reference is gone.
+/// This can be constructed by calling [`Builder`] functions such as
+/// [`new_subgraph`][Builder::new_subgraph] or
+/// [`new_cluster`][Builder::new_cluster]. The newly created builder becomes the
+/// "active" one, as it will hold the reference to the whole graph; the previous
+/// builder becomes active again when its child builder has been dropped and the
+/// mutable reference is gone.
 #[derive(Debug)]
 pub struct SubgraphBuilder<'a> {
     graph: &'a mut Graph,
@@ -48,7 +50,7 @@ impl SubgraphBuilder<'_> {
     /// This releases the hold that the builder has on the reference to the
     /// graph, allowing its parent to be used again.
     pub fn build(self) -> Entity {
-        // This relies on the [Drop] trait.
+        // This relies on the `Drop` trait.
         self.entity
     }
 }
@@ -66,7 +68,7 @@ impl Drop for SubgraphBuilder<'_> {
 /// All required functions to build new graph elements.
 pub trait Builder {
     /// Creates a new node within the current scope, with the given label.
-    /// Returns the new node's [Entity], which can be used to alter this node's
+    /// Returns the new node's [`Entity`], which can be used to alter this node's
     /// attributes.
     fn new_node(&mut self, label: impl Into<String>) -> Entity;
 
@@ -88,45 +90,45 @@ pub trait Builder {
     ///     let cd = builder.new_edge(c, d);   // creates c --> d
     ///     let bc = builder.new_edge(ab, cd); // creates b --> c
     ///
-    /// Returns the [Entity] of the newly created edge.
+    /// Returns the [`Entity`] of the newly created edge.
     fn new_edge(&mut self, head: Entity, tail: Entity) -> Entity;
 
     /// Creates a new subgraph within the current scope.
     ///
     /// This function borrows the underlying shared state, meaning that this
     /// builder can no longer be used until the new subgraph builder has been
-    /// comsumed with [SubgraphBuilder::build] or has been dropped.
+    /// comsumed with [`SubgraphBuilder::build`] or has been dropped.
     fn new_subgraph(&mut self) -> SubgraphBuilder;
 
     /// Creates a new cluster within the current scope with the given label.
     ///
     /// This function borrows the underlying shared state, meaning that this
     /// builder can no longer be used until the new subgraph builder has been
-    /// comsumed with [SubgraphBuilder::build] or has been dropped.
+    /// comsumed with [`SubgraphBuilder::build`] or has been dropped.
     fn new_cluster(&mut self, label: impl Into<String>) -> SubgraphBuilder;
 
-    /// Like [Builder::new_node] but takes attributes to add to the default as an argument.
+    /// Like [`new_node`][Builder::new_node] but takes attributes to add to the default as an argument.
     fn new_node_with(&mut self, label: impl Into<String>, attribs: Attributes) -> Entity {
         let entity = self.new_node(label);
         self.attributes_mut(entity).extend(attribs);
         entity
     }
 
-    /// Like [Builder::new_edge] but takes attributes to add to the default as an argument.
+    /// Like [`new_edge`][Builder::new_edge] but takes attributes to add to the default as an argument.
     fn new_edge_with(&mut self, head: Entity, tail: Entity, attribs: Attributes) -> Entity {
         let entity = self.new_edge(head, tail);
         self.attributes_mut(entity).extend(attribs);
         entity
     }
 
-    /// Like [Builder::new_subgraph] but takes attributes to add to the default as an argument.
+    /// Like [`new_subgraph`][Builder::new_subgraph] but takes attributes to add to the default as an argument.
     fn new_subgraph_with(&mut self, attribs: Attributes) -> SubgraphBuilder {
         let mut result = self.new_subgraph();
         result.attributes_mut(result.entity).extend(attribs);
         result
     }
 
-    /// Like [Builder::new_cluster] but takes attributes to add to the default as an argument.
+    /// Like [`new_cluster`][Builder::new_cluster] but takes attributes to add to the default as an argument.
     fn new_cluster_with(
         &mut self,
         label: impl Into<String>,
@@ -209,7 +211,7 @@ impl RootBuilder {
                 edges: HashMap::new(),
                 latest: 0,
             },
-            current: Default::default(),
+            current: SubgraphInfo::default(),
             defaults: HashMap::new(),
         }
     }
@@ -218,7 +220,7 @@ impl RootBuilder {
         SubgraphBuilder {
             graph: &mut self.graph,
             entity,
-            current: Default::default(),
+            current: SubgraphInfo::default(),
             defaults: self.defaults.clone(),
         }
     }
@@ -229,7 +231,7 @@ impl SubgraphBuilder<'_> {
         SubgraphBuilder {
             graph: self.graph,
             entity,
-            current: Default::default(),
+            current: SubgraphInfo::default(),
             defaults: self.defaults.clone(),
         }
     }

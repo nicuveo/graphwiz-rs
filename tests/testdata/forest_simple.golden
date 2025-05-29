@@ -7,25 +7,25 @@ strict graph {
         node_09 [label="4"]
         node_10 [label="5"]
         node_12 [label="6"]
-        node_03 -- node_04 []
-        node_03 -- node_06 []
-        node_02 -- node_03 []
-        node_09 -- node_10 []
-        node_09 -- node_12 []
-        node_02 -- node_09 []
+        node_03 -- node_04
+        node_03 -- node_06
+        node_02 -- node_03
+        node_09 -- node_10
+        node_09 -- node_12
+        node_02 -- node_09
     }
     subgraph subgraph_15 {
         node_16 [label="10"]
         node_17 [label="20"]
         node_19 [label="30"]
-        node_16 -- node_17 []
-        node_16 -- node_19 []
+        node_16 -- node_17
+        node_16 -- node_19
     }
     subgraph subgraph_21 {
         node_22 [label="10"]
         node_23 [label="20"]
         node_24 [label="30"]
-        node_23 -- node_24 []
-        node_22 -- node_23 []
+        node_23 -- node_24
+        node_22 -- node_23
     }
 }
